@@ -1,8 +1,19 @@
 import { AnimatePresence, motion, useScroll } from "framer-motion";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { getDetails, getMovies, IGetDetails, IGetMoviesResult } from "../api";
+import { useState, useRef } from "react";
+import {
+  getDetails,
+  getDetailsTv,
+  getMovies,
+  getSearchMovie,
+  getSearchTv,
+  IGetDetails,
+  IGetDetailsTv,
+  IGetMoviesResult,
+  IGetSearch,
+  IGetTv,
+} from "../api";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 import { makeImagePath } from "../utils";
 
@@ -91,7 +102,9 @@ const SvgLeftStyle = styled.div`
   height: 60px;
   background: transparent;
   position: absolute;
-  fill: rgba(250, 250, 250, 0.5);
+  stroke: #887e7e;
+  stroke-width: 2;
+  fill: rgba(255, 255, 255, 0.6);
   &:hover {
     scale: 1.1;
   }
@@ -103,7 +116,9 @@ const SvgRightStyle = styled.div`
   height: 60px;
   background: transparent;
   position: absolute;
-  fill: rgba(250, 250, 250, 0.5);
+  stroke: #887e7e;
+  stroke-width: 2;
+  fill: rgba(250, 250, 250, 0.6);
   &:hover {
     scale: 1.1;
   }
@@ -188,27 +203,33 @@ const Release = styled.div`
 const offset = 6;
 
 interface ISlider {
-  data: IGetMoviesResult;
+  data: IGetSearch;
   title: string;
   row: string;
   media: string;
+  keyword: string;
   /* detailMovieId: []; */ // <- Home에서 props 얻기위해 억까로 넣은 props으로 에러 가능
 }
 
 //Slider function
-function Slider({ data, title, row, media }: ISlider) {
+export function SliderSearch({ data, title, row, media, keyword }: ISlider) {
   const [direction, setDirection] = useState(0);
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
+
+  const [keywordProp, setKeywordkeywordProp] = useState("");
+  const NewKeyword = useRef(false);
+  console.log(keywordProp);
   const bigMovieMatch /* : PathMatch<string> | null */ = useMatch(
-    `/${media}/${row}/:movieId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
+    `/search/${row}/${keyword}/:movieId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
   );
 
   const navigate = useNavigate();
   const toggleLeaving = () => setLeaving((prev) => !prev);
   const onBoxClicked = (movieId: number) => {
-    navigate(`/${media}/${row}/${movieId}`);
+    navigate(`/search/${row}/${keyword}/${movieId}`);
   };
+
   //아래 movie:any Slider에서 movieId가져오기 위한 억까props
   const clickedMovie =
     bigMovieMatch?.params.movieId &&
@@ -218,10 +239,12 @@ function Slider({ data, title, row, media }: ISlider) {
 
   const { data: clickedMovieDetail, isLoading: detailLoading } =
     useQuery<IGetDetails>([bigMovieMatch?.params.movieId, "detail"], () =>
-      getDetails(Number(bigMovieMatch?.params.movieId))
+      getSearchMovie(bigMovieMatch?.params.movieId + "")
     );
-  console.log(clickedMovieDetail?.id);
-  const onOverlayClick = () => navigate("/");
+
+  const onOverlayClick = () => {
+    navigate(`/search?keyword=${keyword}`);
+  };
   const changeIndex = (increase: boolean) => {
     if (data) {
       if (leaving) return;
@@ -309,7 +332,7 @@ function Slider({ data, title, row, media }: ISlider) {
                     style={{
                       backgroundImage: `linear-gradient(to top, black, transparent),url(${makeImagePath(
                         clickedMovie.backdrop_path,
-                        ""
+                        "" //Original = "", "w500"
                       )})`,
                     }}
                   />
@@ -317,7 +340,7 @@ function Slider({ data, title, row, media }: ISlider) {
                     <BigTitle>{clickedMovie.title}</BigTitle>
                     <Release>
                       Release Date : <br />
-                      {clickedMovieDetail?.release_date}
+                      {clickedMovieDetail?.title}
                     </Release>
                   </MainTitle>
 
@@ -340,4 +363,4 @@ function Slider({ data, title, row, media }: ISlider) {
   );
 }
 
-export default Slider;
+export default SliderSearch;

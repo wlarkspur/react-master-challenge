@@ -2,7 +2,15 @@ import { AnimatePresence, motion, useScroll } from "framer-motion";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { getDetails, getMovies, IGetDetails, IGetMoviesResult } from "../api";
+import {
+  getDetails,
+  getDetailsTv,
+  getMovies,
+  IGetDetails,
+  IGetDetailsTv,
+  IGetMoviesResult,
+  IGetTv,
+} from "../api";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 import { makeImagePath } from "../utils";
 
@@ -91,7 +99,9 @@ const SvgLeftStyle = styled.div`
   height: 60px;
   background: transparent;
   position: absolute;
-  fill: rgba(250, 250, 250, 0.5);
+  stroke: #887e7e;
+  stroke-width: 2;
+  fill: rgba(255, 255, 255, 0.6);
   &:hover {
     scale: 1.1;
   }
@@ -103,7 +113,9 @@ const SvgRightStyle = styled.div`
   height: 60px;
   background: transparent;
   position: absolute;
-  fill: rgba(250, 250, 250, 0.5);
+  stroke: #887e7e;
+  stroke-width: 2;
+  fill: rgba(250, 250, 250, 0.6);
   &:hover {
     scale: 1.1;
   }
@@ -187,8 +199,8 @@ const Release = styled.div`
 
 const offset = 6;
 
-interface ISlider {
-  data: IGetMoviesResult;
+export interface ISliderTv {
+  data: IGetTv;
   title: string;
   row: string;
   media: string;
@@ -196,32 +208,30 @@ interface ISlider {
 }
 
 //Slider function
-function Slider({ data, title, row, media }: ISlider) {
+function SliderTv({ data, title, row, media }: ISliderTv) {
   const [direction, setDirection] = useState(0);
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const bigMovieMatch /* : PathMatch<string> | null */ = useMatch(
-    `/${media}/${row}/:movieId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
+    `/${media}/${row}/:tvId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
   );
 
   const navigate = useNavigate();
   const toggleLeaving = () => setLeaving((prev) => !prev);
-  const onBoxClicked = (movieId: number) => {
-    navigate(`/${media}/${row}/${movieId}`);
+  const onBoxClicked = (tvId: number) => {
+    navigate(`/${media}/${row}/${tvId}`);
   };
   //아래 movie:any Slider에서 movieId가져오기 위한 억까props
   const clickedMovie =
-    bigMovieMatch?.params.movieId &&
-    data.results.find(
-      (movie) => movie.id + "" === bigMovieMatch.params.movieId
-    );
+    bigMovieMatch?.params.tvId &&
+    data.results.find((tv) => tv.id + "" === bigMovieMatch.params.tvId);
 
-  const { data: clickedMovieDetail, isLoading: detailLoading } =
-    useQuery<IGetDetails>([bigMovieMatch?.params.movieId, "detail"], () =>
-      getDetails(Number(bigMovieMatch?.params.movieId))
+  const { data: clickedTvDetail, isLoading: detailLoading } =
+    useQuery<IGetDetailsTv>([bigMovieMatch?.params.tvId, "detail"], () =>
+      getDetailsTv(Number(bigMovieMatch?.params.tvId))
     );
-  console.log(clickedMovieDetail?.id);
-  const onOverlayClick = () => navigate("/");
+  console.log(clickedTvDetail);
+  const onOverlayClick = () => navigate("/tv");
   const changeIndex = (increase: boolean) => {
     if (data) {
       if (leaving) return;
@@ -272,19 +282,19 @@ function Slider({ data, title, row, media }: ISlider) {
             .slice(1)
             /* .sort(() => 0.5 - Math.random()) */
             .slice(offset * index, offset * index + offset)
-            .map((movie) => (
+            .map((tv) => (
               <Box
-                layoutId={movie.id + "" + row}
-                key={movie.id /* + row */}
+                layoutId={tv.id + "" + row}
+                key={tv.id /* + row */}
                 whileHover="hover"
                 initial="normal"
                 variants={boxVariants}
-                onClick={() => onBoxClicked(movie.id)}
+                onClick={() => onBoxClicked(tv.id)}
                 transition={{ type: "tween" }}
-                bgphoto={makeImagePath(movie.backdrop_path, "w500")}
+                bgphoto={makeImagePath(tv.backdrop_path, "w500")}
               >
                 <Info variants={infoVariants}>
-                  <h4>{movie.title}</h4>
+                  <h4>{tv.original_name}</h4>
                 </Info>
               </Box>
             ))}
@@ -301,7 +311,7 @@ function Slider({ data, title, row, media }: ISlider) {
             />
             <BigMovie
               /* style={{ top: scrollY.get() + 100 }} */
-              layoutId={bigMovieMatch.params.movieId + row} //movieId 는 route :route movieId완 애니연동
+              layoutId={bigMovieMatch.params.tvId + row} //movieId 는 route :route movieId완 애니연동
             >
               {clickedMovie && (
                 <>
@@ -309,15 +319,15 @@ function Slider({ data, title, row, media }: ISlider) {
                     style={{
                       backgroundImage: `linear-gradient(to top, black, transparent),url(${makeImagePath(
                         clickedMovie.backdrop_path,
-                        ""
+                        "" //Original = "", "w500"
                       )})`,
                     }}
                   />
                   <MainTitle>
-                    <BigTitle>{clickedMovie.title}</BigTitle>
+                    <BigTitle>{clickedMovie.original_name}</BigTitle>
                     <Release>
                       Release Date : <br />
-                      {clickedMovieDetail?.release_date}
+                      {clickedTvDetail?.first_air_date}
                     </Release>
                   </MainTitle>
 
@@ -340,4 +350,4 @@ function Slider({ data, title, row, media }: ISlider) {
   );
 }
 
-export default Slider;
+export default SliderTv;

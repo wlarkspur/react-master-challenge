@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useMatch, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import SliderSearch from "./SliderSearch";
 
 const Nav = styled(motion.nav)`
   display: flex;
@@ -99,6 +100,7 @@ interface IForm {
 }
 
 function Header() {
+  const [keyword, setKeyword] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const homeMatch = useMatch("/");
   const tvMatch = useMatch("/tv");

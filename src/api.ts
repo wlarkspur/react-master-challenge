@@ -3,11 +3,18 @@ import { Url, UrlObject } from "url";
 const BASE_PATH = "https://api.themoviedb.org/3";
 const API_KEY = process.env.REACT_APP_API_KEY;
 const REGION_KR = "kr-KR";
-interface IMovie {
+export interface IMovie {
   id: number;
   backdrop_path: string;
   poster_path: string;
   title: string;
+  overview: string;
+}
+interface ITv {
+  id: number;
+  backdrop_path: string;
+  poster_path: string;
+  original_name: string;
   overview: string;
 }
 interface IDetails {
@@ -32,6 +39,13 @@ export interface IGetMoviesResult {
   movieId: string;
 }
 
+export interface IGetTv {
+  page: number;
+  results: ITv[];
+  total_pages: number;
+  total_results: number;
+}
+
 export interface IGetDetails {
   backdrop_path: string;
   belongs_to_collection: IDetails;
@@ -46,12 +60,41 @@ export interface IGetDetails {
   tagline: string;
   vote_average: number;
 }
+export interface IGetDetailsTv {
+  backdrop_path: string;
+  created_by: [
+    {
+      id: number;
+      name: string;
+      profile_path: string;
+    }
+  ];
+  genres: IGenres[];
+  homepages: string;
+  id: string;
+  first_air_date: string;
+  last_air_date: string;
+  overview: string;
+  name: string;
+  number_of_episodes: number;
+  number_of_seasons: number;
+  poster_path: string;
+  episode_run_time: [number];
+  tagline: string;
+  vote_average: number;
+}
 
 export interface IGetSearch {
   page: number;
   results: IMovie[];
   total_pages: number;
-  total_result: number;
+  total_results: number;
+}
+export interface IGetSearchTv {
+  page: number;
+  results: ITv[];
+  total_pages: number;
+  total_results: number;
 }
 
 //Movies - NowPlaying
@@ -68,6 +111,12 @@ export function getPopular() {
   );
 }
 
+export function getTopRated() {
+  return fetch(`${BASE_PATH}/movie/top_rated?api_key=${API_KEY}`).then(
+    (response) => response.json()
+  );
+}
+
 export const getUpcoming = async () => {
   const response = await fetch(
     `${BASE_PATH}/movie/upcoming?api_key=${API_KEY}`
@@ -76,6 +125,27 @@ export const getUpcoming = async () => {
 
   return json;
 };
+
+// Tv shows
+
+export const getOnAir = async () => {
+  const response = await fetch(`${BASE_PATH}/tv/on_the_air?api_key=${API_KEY}`);
+  const json = await response.json();
+  return json;
+};
+export const getAiring = async () => {
+  const response = await fetch(
+    `${BASE_PATH}/tv/airing_today?api_key=${API_KEY}`
+  );
+  const json = await response.json();
+  return json;
+};
+export const getTopRatedTv = async () => {
+  const response = await fetch(`${BASE_PATH}/tv/top_rated?api_key=${API_KEY}`);
+  const json = await response.json();
+  return json;
+};
+
 // ----------------------------------------------------------------------
 
 export const getDetails = async (movieId: number | undefined) => {
@@ -88,9 +158,26 @@ export const getDetails = async (movieId: number | undefined) => {
   const json = reponse.json();
   return json;
 };
+export const getDetailsTv = async (tvId: number | undefined) => {
+  if (!tvId) {
+    return null;
+  }
+  const reponse = await fetch(`${BASE_PATH}/tv/${tvId}?api_key=${API_KEY}`);
+  const json = reponse.json();
+  return json;
+};
 
-export function getSearch(keyword: string) {
-  return fetch(
-    `${BASE_PATH}/search/movie?api_key=${API_KEY}&language=en-US&query=${keyword}&page=1&include_adult=false`
-  ).then((response) => response.json());
-}
+export const getSearchMovie = async (keyword: string) => {
+  const response = await fetch(
+    `${BASE_PATH}/search/movie?api_key=${API_KEY}&query=${keyword}`
+  );
+  const json = await response.json();
+  return json;
+};
+export const getSearchTv = async (keyword: string) => {
+  const response = await fetch(
+    `${BASE_PATH}/search/tv?api_key=${API_KEY}&query=${keyword}`
+  );
+  const json = await response.json();
+  return json;
+};

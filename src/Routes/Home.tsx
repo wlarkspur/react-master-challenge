@@ -11,6 +11,7 @@ import {
   IGetMoviesResult,
   getDetails,
   IGetDetails,
+  getTopRated,
 } from "../api";
 import Slider from "../Components/Slider";
 import useWindowDimensions from "../Components/useWindowDimension";
@@ -63,9 +64,9 @@ function Home() {
     ["movies", "nowPlaying"],
     getMovies
   );
-  const { data: popular } = useQuery<IGetMoviesResult>(
-    ["movies2", "popular"],
-    getPopular
+  const { data: topRated } = useQuery<IGetMoviesResult>(
+    ["movies2", "toprated"],
+    getTopRated
   );
   const { data: upcoming } = useQuery<IGetMoviesResult>(
     ["movies3", "lastest"],
@@ -89,14 +90,14 @@ function Home() {
           <SliderArea>
             <Slider
               data={nowPlaying as IGetMoviesResult}
-              title={"Now Playing"}
+              title={"Latest"}
               row={"row1"}
               media={"movies"}
             />
 
             <Slider
-              data={popular as IGetMoviesResult}
-              title={"Popular"}
+              data={topRated as IGetMoviesResult}
+              title={"Top Rated"}
               row={"row2"}
               media={"movies"}
             />
