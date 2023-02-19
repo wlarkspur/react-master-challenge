@@ -14,6 +14,7 @@ import { makeImagePath, makeSearchResult } from "../utils";
 import Slider from "../Components/Slider";
 import SliderSearch from "../Components/SliderSearch";
 import { ISliderTv } from "../Components/SliderTv";
+import { useEffect } from "react";
 
 const Wrapper = styled.div`
   background: black;
@@ -52,7 +53,15 @@ const SliderArea = styled.div`
   display: flex;
   flex-direction: column;
 `;
-
+const ErrorMessage = styled.span`
+  display: flex;
+  position: fixed;
+  justify-content: center;
+  align-items: center;
+  top: 300px;
+  left: 200px;
+  font-size: 20px;
+`;
 /* const WrapperResult = styled.div`
   display: flex;
   gap: 5px;
@@ -80,33 +89,45 @@ const Result = styled.div<{ bgphoto: string }>`
 function Search() {
   const location = useLocation();
   const keyword = new URLSearchParams(location.search).get("keyword") + "";
-  const { data: movie, isLoading } = useQuery<IGetSearch>(
-    ["movies", keyword],
-    () => getSearchMovie(keyword || "")
+  const {
+    data: movieData,
+    isLoading,
+    refetch: movie_refetch,
+  } = useQuery<IGetSearch>(["movies", "movieData"], () =>
+    getSearchMovie(keyword!)
   );
-  console.log("HERE is movie", movie);
-  const { data: searchMovie } = useQuery<IGetSearchTv>(["movie", keyword], () =>
-    getSearchMovie(keyword || "")
-  );
+  console.log("HERE is movie", movieData, keyword);
+
+  useEffect(() => {
+    movie_refetch();
+  }, [keyword]);
 
   return (
     <Wrapper>
       {isLoading ? (
         <Loader>is Loading</Loader>
       ) : (
-        <Banner bgphoto={makeImagePath(movie?.results[0].backdrop_path + "")}>
-          <Title>{movie?.results[0].title}</Title>
-          <Overview>{movie?.results[0].overview}</Overview>
-        </Banner>
+        movieData?.results[0] && (
+          <Banner
+            bgphoto={makeImagePath(movieData?.results[0].backdrop_path + "")}
+          >
+            <Title>{movieData?.results[0].title}</Title>
+            <Overview>{movieData?.results[0].overview}</Overview>
+          </Banner>
+        )
       )}
       <SliderArea>
-        <SliderSearch
-          data={movie as IGetSearch}
-          title={`Search Results: ${keyword + ""}`}
-          row={"row1"}
-          media={"movies"}
-          keyword={keyword}
-        ></SliderSearch>
+        {movieData?.results.length ? (
+          <SliderSearch
+            data={movieData as IGetSearch}
+            title={`Search Results: ${keyword}`}
+            row={"row1"}
+            media={"movies"}
+            keyword={keyword}
+          ></SliderSearch>
+        ) : (
+          <ErrorMessage>No results found for {keyword}</ErrorMessage>
+        )}
       </SliderArea>
     </Wrapper>
   );

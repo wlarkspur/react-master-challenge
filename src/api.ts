@@ -169,14 +169,14 @@ export const getDetailsTv = async (tvId: number | undefined) => {
 
 export const getSearchMovie = async (keyword: string) => {
   const response = await fetch(
-    `${BASE_PATH}/search/movie?api_key=${API_KEY}&query=${keyword}`
+    `${BASE_PATH}/search/movie?api_key=${API_KEY}&query=${keyword}&page=1`
   );
   const json = await response.json();
   return json;
 };
 export const getSearchTv = async (keyword: string) => {
   const response = await fetch(
-    `${BASE_PATH}/search/tv?api_key=${API_KEY}&query=${keyword}`
+    `${BASE_PATH}/search/tv?api_key=${API_KEY}&query=${keyword}&page=1`
   );
   const json = await response.json();
   return json;

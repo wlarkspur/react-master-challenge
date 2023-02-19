@@ -1,19 +1,8 @@
 import { AnimatePresence, motion, useScroll } from "framer-motion";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useRef } from "react";
-import {
-  getDetails,
-  getDetailsTv,
-  getMovies,
-  getSearchMovie,
-  getSearchTv,
-  IGetDetails,
-  IGetDetailsTv,
-  IGetMoviesResult,
-  IGetSearch,
-  IGetTv,
-} from "../api";
+import { useState } from "react";
+import { getSearchMovie, IGetDetails, IGetSearch } from "../api";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 import { makeImagePath } from "../utils";
 
@@ -213,37 +202,35 @@ interface ISlider {
 
 //Slider function
 export function SliderSearch({ data, title, row, media, keyword }: ISlider) {
+  const navigate = useNavigate();
   const [direction, setDirection] = useState(0);
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
-
-  const [keywordProp, setKeywordkeywordProp] = useState("");
-  const NewKeyword = useRef(false);
-  console.log(keywordProp);
-  const bigMovieMatch /* : PathMatch<string> | null */ = useMatch(
-    `/search/${row}/${keyword}/:movieId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
+  console.log("데이터", data.results[0].id);
+  const bigMovieMatch: PathMatch<string> | null = useMatch(
+    `/search/${media}/:movieId:${keyword}` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
   );
+  console.log("빅매치", bigMovieMatch);
 
-  const navigate = useNavigate();
   const toggleLeaving = () => setLeaving((prev) => !prev);
   const onBoxClicked = (movieId: number) => {
-    navigate(`/search/${row}/${keyword}/${movieId}`);
+    navigate(`/search/${media}/${movieId}:${keyword}`);
   };
-
+  console.log("온박스", onBoxClicked);
   //아래 movie:any Slider에서 movieId가져오기 위한 억까props
   const clickedMovie =
     bigMovieMatch?.params.movieId &&
     data.results.find(
       (movie) => movie.id + "" === bigMovieMatch.params.movieId
     );
-
+  console.log("클릭드박스", clickedMovie);
   const { data: clickedMovieDetail, isLoading: detailLoading } =
     useQuery<IGetDetails>([bigMovieMatch?.params.movieId, "detail"], () =>
       getSearchMovie(bigMovieMatch?.params.movieId + "")
     );
 
   const onOverlayClick = () => {
-    navigate(`/search?keyword=${keyword}`);
+    navigate(`/search?keyword=${keyword}`); // 굉장히 의심가는 부분!!
   };
   const changeIndex = (increase: boolean) => {
     if (data) {

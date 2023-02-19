@@ -17,13 +17,13 @@ function App() {
         <Route path="/" element={<Home />}></Route>
         <Route path="/movies/:row/:movieId" element={<Home />}></Route>
         <Route path="/tv" element={<Tv />}></Route>
-        <Route path="/tv/:row/:tvId" element={<Tv />}></Route>
-        <Route path="/search" element={<Search />}></Route>
-        <Route
-          path="/search/:row/:keyword/:movieId"
-          element={<Search />}
-        ></Route>
-        <Route path="/search/:row/:tvId" element={<Search />}></Route>
+        <Route path="/tv" element={<Tv />}>
+          <Route path=":row/:tvId" element={<Tv />}></Route>
+        </Route>
+        <Route path="/search" element={<Search />}>
+          <Route path=":movies/:movieId" element={<Search />}></Route>
+          <Route path="?keyword:keyword" element={<Search />}></Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   );
