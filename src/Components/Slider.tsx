@@ -179,7 +179,12 @@ const MainTitle = styled.div`
   margin-right: 1rem;
   align-items: center;
 `;
-
+const Rating = styled.div`
+  font-size: 0.8rem;
+  display: flex;
+  font-weight: 600;
+  color: yellowgreen;
+`;
 const Release = styled.div`
   position: relative;
   font-size: 0.8rem;
@@ -315,6 +320,12 @@ function Slider({ data, title, row, media }: ISlider) {
                   />
                   <MainTitle>
                     <BigTitle>{clickedMovie.title}</BigTitle>
+                    <div>
+                      <span style={{ fontSize: "0.8rem" }}> Rating:</span>
+                      <Rating>
+                        {clickedMovieDetail?.vote_average?.toFixed(1)}
+                      </Rating>
+                    </div>
                     <Release>
                       Release Date : <br />
                       {clickedMovieDetail?.release_date}

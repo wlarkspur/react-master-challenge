@@ -1,6 +1,7 @@
 import {
   BrowserRouter,
   createBrowserRouter,
+  HashRouter,
   Route,
   Routes,
 } from "react-router-dom";
@@ -11,7 +12,7 @@ import Tv from "./Routes/Tv";
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Header />
       <Routes>
         <Route path="/" element={<Home />}></Route>
@@ -24,7 +25,7 @@ function App() {
         <Route path="/search/movies/:movieId" element={<Search />}></Route>
         <Route path="/search/tv/:tvId" element={<Search />}></Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
