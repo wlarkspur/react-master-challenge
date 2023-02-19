@@ -15,6 +15,7 @@ import Slider from "../Components/Slider";
 import SliderSearch from "../Components/SliderSearch";
 import { ISliderTv } from "../Components/SliderTv";
 import { useEffect } from "react";
+import SliderSearchTv from "../Components/SliderSearchTv";
 
 const Wrapper = styled.div`
   background: black;
@@ -88,23 +89,40 @@ const Result = styled.div<{ bgphoto: string }>`
 
 function Search() {
   const location = useLocation();
-  const keyword = new URLSearchParams(location.search).get("keyword") + "";
+  const keyword = new URLSearchParams(location.search).get("keyword");
   const {
     data: movieData,
-    isLoading,
+    isLoading: isMovieLoading,
     refetch: movie_refetch,
   } = useQuery<IGetSearch>(["movies", "movieData"], () =>
     getSearchMovie(keyword!)
   );
+  const {
+    data: tvData,
+    isLoading: isTvLoading,
+    refetch: tv_refetch,
+  } = useQuery<IGetSearchTv>(["tv", "tvData"], () => getSearchTv(keyword!));
   console.log("HERE is movie", movieData, keyword);
+  console.log("HERE is tv", tvData, keyword);
 
   useEffect(() => {
     movie_refetch();
+    tv_refetch();
   }, [keyword]);
+  if (!keyword) {
+    return <div>No keyword specified</div>;
+  }
 
+  if (isMovieLoading || isTvLoading) {
+    return <Loader>is Loading</Loader>;
+  }
+
+  if (!movieData?.results[0]) {
+    return <div>No movies found for {keyword}</div>;
+  }
   return (
     <Wrapper>
-      {isLoading ? (
+      {isMovieLoading ? (
         <Loader>is Loading</Loader>
       ) : (
         movieData?.results[0] && (
@@ -117,17 +135,20 @@ function Search() {
         )
       )}
       <SliderArea>
-        {movieData?.results.length ? (
-          <SliderSearch
-            data={movieData as IGetSearch}
-            title={`Search Results: ${keyword}`}
-            row={"row1"}
-            media={"movies"}
-            keyword={keyword}
-          ></SliderSearch>
-        ) : (
-          <ErrorMessage>No results found for {keyword}</ErrorMessage>
-        )}
+        <SliderSearch
+          data={movieData as IGetSearch}
+          title={`Search Movie Results: ${keyword}`}
+          row={"row1"}
+          media={"movies"}
+          keyword={keyword!}
+        ></SliderSearch>
+        <SliderSearchTv
+          data={tvData as IGetSearchTv}
+          title={`Search Tv Results: ${keyword}`}
+          row={"row2"}
+          media={"tv"}
+          keyword={keyword!}
+        ></SliderSearchTv>
       </SliderArea>
     </Wrapper>
   );

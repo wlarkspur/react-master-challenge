@@ -2,7 +2,14 @@ import { AnimatePresence, motion, useScroll } from "framer-motion";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { getSearchMovie, IGetDetails, IGetSearch } from "../api";
+import {
+  getSearchMovie,
+  getSearchTv,
+  IGetDetails,
+  IGetDetailsTv,
+  IGetSearch,
+  IGetSearchTv,
+} from "../api";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 import { makeImagePath } from "../utils";
 
@@ -192,7 +199,7 @@ const Release = styled.div`
 const offset = 6;
 
 interface ISlider {
-  data: IGetSearch;
+  data: IGetSearchTv;
   title: string;
   row: string;
   media: string;
@@ -201,31 +208,29 @@ interface ISlider {
 }
 
 //Slider function
-export function SliderSearch({ data, title, row, media, keyword }: ISlider) {
+export function SliderSearchTv({ data, title, row, media, keyword }: ISlider) {
   const navigate = useNavigate();
   const [direction, setDirection] = useState(0);
   const [index, setIndex] = useState(0);
   const [leaving, setLeaving] = useState(false);
 
   const bigMovieMatch: PathMatch<string> | null = useMatch(
-    `/search/:media/:movieId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
+    `/search/:media/:tvId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
   );
-  console.log(bigMovieMatch?.params);
+
   const toggleLeaving = () => setLeaving((prev) => !prev);
-  const onBoxClicked = (movieId: number) => {
-    navigate(`/search/${media}/${movieId}?keyword=${keyword}`);
+  const onBoxClicked = (tvId: number) => {
+    navigate(`/search/${media}/${tvId}?keyword=${keyword}`);
   };
 
   //아래 movie:any Slider에서 movieId가져오기 위한 억까props
-  const clickedMovie =
-    bigMovieMatch?.params.movieId &&
-    data.results.find(
-      (movie) => movie.id + "" === bigMovieMatch.params.movieId
-    );
+  const clickedTv =
+    bigMovieMatch?.params.tvId &&
+    data.results.find((tv) => tv.id + "" === bigMovieMatch.params.tvId);
 
-  const { data: clickedMovieDetail, isLoading: detailLoading } =
-    useQuery<IGetDetails>([bigMovieMatch?.params.movieId, "detail"], () =>
-      getSearchMovie(bigMovieMatch?.params.movieId + "")
+  const { data: clickedTvDetail, isLoading: detailLoading } =
+    useQuery<IGetDetailsTv>([bigMovieMatch?.params.tvId, "detail"], () =>
+      getSearchTv(bigMovieMatch?.params.tvId + "")
     );
 
   const onOverlayClick = () => {
@@ -281,19 +286,19 @@ export function SliderSearch({ data, title, row, media, keyword }: ISlider) {
             .slice(1)
             /* .sort(() => 0.5 - Math.random()) */
             .slice(offset * index, offset * index + offset)
-            .map((movie) => (
+            .map((tv) => (
               <Box
-                layoutId={movie.id + "" + row}
-                key={movie.id /* + row */}
+                layoutId={tv.id + "" + row}
+                key={tv.id /* + row */}
                 whileHover="hover"
                 initial="normal"
                 variants={boxVariants}
-                onClick={() => onBoxClicked(movie.id)}
+                onClick={() => onBoxClicked(tv.id)}
                 transition={{ type: "tween" }}
-                bgphoto={makeImagePath(movie.backdrop_path, "w500")}
+                bgphoto={makeImagePath(tv.backdrop_path, "w500")}
               >
                 <Info variants={infoVariants}>
-                  <h4>{movie.title}</h4>
+                  <h4>{tv.original_name}</h4>
                 </Info>
               </Box>
             ))}
@@ -310,33 +315,34 @@ export function SliderSearch({ data, title, row, media, keyword }: ISlider) {
             />
             <BigMovie
               /* style={{ top: scrollY.get() + 100 }} */
-              layoutId={bigMovieMatch.params.movieId + row} //movieId 는 route :route movieId완 애니연동
+              layoutId={bigMovieMatch.params.tvId + row} //movieId 는 route :route movieId완 애니연동
             >
-              {clickedMovie && (
+              {clickedTv && (
                 <>
                   <BigCover
                     style={{
                       backgroundImage: `linear-gradient(to top, black, transparent),url(${makeImagePath(
-                        clickedMovie.backdrop_path,
+                        clickedTv.backdrop_path,
                         "" //Original = "", "w500"
                       )})`,
                     }}
                   />
+
                   <MainTitle>
-                    <BigTitle>{clickedMovie.title}</BigTitle>
+                    <BigTitle>{clickedTv.original_name}</BigTitle>
                     <Release>
                       Release Date : <br />
-                      {clickedMovieDetail?.title}
+                      <span>{clickedTvDetail?.first_air_date}</span>
                     </Release>
                   </MainTitle>
 
                   {/* <div>{clickedMovieDetail?.vote_average}</div> */}
                   <BigOverview>
                     {
-                      (clickedMovie.overview =
-                        clickedMovie.overview.length > 201
-                          ? clickedMovie.overview.slice(0, 200) + "..."
-                          : clickedMovie.overview)
+                      (clickedTv.overview =
+                        clickedTv.overview.length > 201
+                          ? clickedTv.overview.slice(0, 200) + "..."
+                          : clickedTv.overview)
                     }
                   </BigOverview>
                 </>
@@ -349,4 +355,4 @@ export function SliderSearch({ data, title, row, media, keyword }: ISlider) {
   );
 }
 
-export default SliderSearch;
+export default SliderSearchTv;
