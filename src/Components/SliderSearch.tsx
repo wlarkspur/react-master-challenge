@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useScroll } from "framer-motion";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { getSearchMovie, IGetDetails, IGetSearch } from "../api";
+import { getDetails, getSearchMovie, IGetDetails, IGetSearch } from "../api";
 import { PathMatch, useMatch, useNavigate } from "react-router-dom";
 import { makeImagePath } from "../utils";
 
@@ -183,7 +183,12 @@ const MainTitle = styled.div`
   margin-right: 1rem;
   align-items: center;
 `;
-
+const Rating = styled.div`
+  font-size: 0.8rem;
+  display: flex;
+  font-weight: 600;
+  color: yellowgreen;
+`;
 const Release = styled.div`
   position: relative;
   font-size: 0.8rem;
@@ -208,12 +213,12 @@ export function SliderSearch({ data, title, row, media, keyword }: ISlider) {
   const [leaving, setLeaving] = useState(false);
 
   const bigMovieMatch: PathMatch<string> | null = useMatch(
-    `/search/:media/:movieId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
+    `/search/movies/:movieId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
   );
   console.log(bigMovieMatch?.params);
   const toggleLeaving = () => setLeaving((prev) => !prev);
   const onBoxClicked = (movieId: number) => {
-    navigate(`/search/${media}/${movieId}?keyword=${keyword}`);
+    navigate(`/search/movies/${movieId}?keyword=${keyword}`);
   };
 
   //아래 movie:any Slider에서 movieId가져오기 위한 억까props
@@ -225,7 +230,7 @@ export function SliderSearch({ data, title, row, media, keyword }: ISlider) {
 
   const { data: clickedMovieDetail, isLoading: detailLoading } =
     useQuery<IGetDetails>([bigMovieMatch?.params.movieId, "detail"], () =>
-      getSearchMovie(bigMovieMatch?.params.movieId + "")
+      getDetails(Number(bigMovieMatch?.params.movieId))
     );
 
   const onOverlayClick = () => {
@@ -324,9 +329,16 @@ export function SliderSearch({ data, title, row, media, keyword }: ISlider) {
                   />
                   <MainTitle>
                     <BigTitle>{clickedMovie.title}</BigTitle>
+                    <div>
+                      <span style={{ fontSize: "0.8rem" }}> Rating:</span>
+                      <Rating>
+                        {clickedMovieDetail?.vote_average?.toFixed(1)}
+                      </Rating>
+                    </div>
+
                     <Release>
                       Release Date : <br />
-                      {clickedMovieDetail?.title}
+                      {clickedMovieDetail?.release_date}
                     </Release>
                   </MainTitle>
 

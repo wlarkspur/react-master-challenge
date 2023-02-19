@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
+  getDetailsTv,
   getSearchMovie,
   getSearchTv,
   IGetDetails,
@@ -190,7 +191,12 @@ const MainTitle = styled.div`
   margin-right: 1rem;
   align-items: center;
 `;
-
+const Rating = styled.div`
+  font-size: 0.8rem;
+  display: flex;
+  font-weight: 600;
+  color: yellowgreen;
+`;
 const Release = styled.div`
   position: relative;
   font-size: 0.8rem;
@@ -215,12 +221,12 @@ export function SliderSearchTv({ data, title, row, media, keyword }: ISlider) {
   const [leaving, setLeaving] = useState(false);
 
   const bigMovieMatch: PathMatch<string> | null = useMatch(
-    `/search/:media/:tvId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
+    `/search/tv/:tvId` // :id -> :movieId Route id와 API id 간 구분을 명확히하기 위함
   );
 
   const toggleLeaving = () => setLeaving((prev) => !prev);
   const onBoxClicked = (tvId: number) => {
-    navigate(`/search/${media}/${tvId}?keyword=${keyword}`);
+    navigate(`/search/tv/${tvId}?keyword=${keyword}`);
   };
 
   //아래 movie:any Slider에서 movieId가져오기 위한 억까props
@@ -230,7 +236,7 @@ export function SliderSearchTv({ data, title, row, media, keyword }: ISlider) {
 
   const { data: clickedTvDetail, isLoading: detailLoading } =
     useQuery<IGetDetailsTv>([bigMovieMatch?.params.tvId, "detail"], () =>
-      getSearchTv(bigMovieMatch?.params.tvId + "")
+      getDetailsTv(Number(bigMovieMatch?.params.tvId))
     );
 
   const onOverlayClick = () => {
@@ -330,9 +336,15 @@ export function SliderSearchTv({ data, title, row, media, keyword }: ISlider) {
 
                   <MainTitle>
                     <BigTitle>{clickedTv.original_name}</BigTitle>
+                    <div>
+                      <span style={{ fontSize: "0.8rem" }}> Rating:</span>
+                      <Rating>
+                        {clickedTvDetail?.vote_average?.toFixed(1)}
+                      </Rating>
+                    </div>
                     <Release>
                       Release Date : <br />
-                      <span>{clickedTvDetail?.first_air_date}</span>
+                      {clickedTvDetail?.first_air_date}
                     </Release>
                   </MainTitle>
 
