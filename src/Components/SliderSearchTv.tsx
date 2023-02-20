@@ -210,7 +210,6 @@ interface ISlider {
   row: string;
   media: string;
   keyword: string;
-  /* detailMovieId: []; */ // <- Home에서 props 얻기위해 억까로 넣은 props으로 에러 가능
 }
 
 //Slider function
